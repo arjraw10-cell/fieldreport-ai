@@ -769,3 +769,67 @@ export async function resetDemoData() {
   }
   return seedCase();
 }
+
+export async function resetOrganizationWorkspace(orgId: string) {
+  if (sqlClient) {
+    await ensurePg();
+    await sqlClient.begin(async (sql) => {
+      await sql`
+        delete from audit
+        where report_id in (
+          select reports.id
+          from reports
+          join cases on cases.id = reports.case_id
+          where cases.org_id = ${orgId}
+        )
+      `;
+      await sql`
+        delete from reports
+        where case_id in (
+          select id
+          from cases
+          where org_id = ${orgId}
+        )
+      `;
+      await sql`delete from evidence_items where org_id = ${orgId}`;
+      await sql`delete from policies where org_id = ${orgId}`;
+      await sql`delete from cases where org_id = ${orgId}`;
+    });
+    return;
+  }
+
+  const caseIds = new Set(memoryStore.cases.filter((item) => item.org_id === orgId).map((item) => item.id));
+  memoryStore.audit = memoryStore.audit.filter((entry) => !memoryStore.reports.some((report) => report.id === entry.report_id && caseIds.has(report.case_id)));
+  memoryStore.reports = memoryStore.reports.filter((report) => !caseIds.has(report.case_id));
+  memoryStore.evidence = memoryStore.evidence.filter((item) => item.org_id !== orgId);
+  memoryStore.policies = memoryStore.policies.filter((item) => item.org_id !== orgId);
+  memoryStore.cases = memoryStore.cases.filter((item) => item.org_id !== orgId);
+}
+
+export async function resetApplicationState() {
+  if (sqlClient) {
+    await ensurePg();
+    await sqlClient.begin(async (sql) => {
+      await sql`delete from audit`;
+      await sql`delete from reports`;
+      await sql`delete from evidence_items`;
+      await sql`delete from policies`;
+      await sql`delete from cases`;
+      await sql`delete from sessions`;
+      await sql`delete from memberships`;
+      await sql`delete from organizations`;
+      await sql`delete from users`;
+    });
+    return;
+  }
+
+  memoryStore.audit.length = 0;
+  memoryStore.reports.length = 0;
+  memoryStore.evidence.length = 0;
+  memoryStore.policies.length = 0;
+  memoryStore.cases.length = 0;
+  memoryStore.sessions.length = 0;
+  memoryStore.memberships.length = 0;
+  memoryStore.organizations.length = 0;
+  memoryStore.users.length = 0;
+}

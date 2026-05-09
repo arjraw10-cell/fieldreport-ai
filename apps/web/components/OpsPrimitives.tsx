@@ -25,7 +25,8 @@ export function ShellHeader({
   user,
   org,
   action,
-  backHref
+  backHref,
+  leftAction
 }: {
   title: string;
   eyebrow: string;
@@ -33,12 +34,14 @@ export function ShellHeader({
   org?: string;
   action?: ReactNode;
   backHref?: string;
+  leftAction?: ReactNode;
 }) {
   return (
     <header className="border-b border-ink/10 bg-white/85 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-4 md:px-6">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
+            {leftAction}
             {backHref && (
               <Link className="rounded-md border border-ink/15 px-2.5 py-1.5 text-sm font-bold text-ink hover:bg-ink hover:text-white" href={backHref}>
                 Back

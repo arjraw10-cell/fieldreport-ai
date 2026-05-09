@@ -73,6 +73,7 @@ export default function CaseDashboard() {
   const [cases, setCases] = useState<CaseSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [notice, setNotice] = useState<{ tone: "info" | "error" | "success"; text: string } | null>(null);
   const [form, setForm] = useState<CreateCaseForm>({
     caseNumber: "",
@@ -162,6 +163,27 @@ export default function CaseDashboard() {
     }
   }
 
+  async function resetWorkspace() {
+    if (!window.confirm("Reset the entire demo environment? This will delete all accounts, cases, evidence, reports, policies, audit history, and sign everyone out.")) {
+      return;
+    }
+
+    setResetting(true);
+    setNotice(null);
+    try {
+      const response = await fetch("/api/demo/reset", { method: "POST" });
+      const json = (await response.json().catch(() => ({}))) as unknown;
+      if (!response.ok) throw new Error(readError(json, "Failed to reset application."));
+      setCases([]);
+      window.location.assign("/signup");
+      return;
+    } catch (error) {
+      setNotice({ tone: "error", text: error instanceof Error ? error.message : "Failed to reset application." });
+    } finally {
+      setResetting(false);
+    }
+  }
+
   const org = user?.org ?? user?.organization;
   const role = user?.membership?.role ?? user?.role;
   const openCount = cases.filter((item) => !["approved", "closed"].includes((item.status ?? "").toLowerCase())).length;
@@ -174,6 +196,16 @@ export default function CaseDashboard() {
         org={[org?.name, role].filter(Boolean).join(" / ")}
         title="Case Operations"
         user={user?.name ?? user?.email}
+        leftAction={
+          <button
+            className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-900 hover:bg-red-100 disabled:opacity-50"
+            disabled={resetting}
+            onClick={() => void resetWorkspace()}
+            type="button"
+          >
+            {resetting ? "Resetting..." : "Reset All"}
+          </button>
+        }
         action={
           <button className="rounded-md border border-ink/15 bg-white px-3 py-2 text-sm font-bold text-ink hover:bg-ink hover:text-white" onClick={() => void logout()}>
             Logout
