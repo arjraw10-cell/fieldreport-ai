@@ -1,0 +1,25 @@
+{
+  "case_number": "MPD-2024-1172",
+  "department": "Metro PD",
+  "incident_type": "DUI Arrest",
+  "supervisor": "Sgt. M. Rodriguez",
+  "weather": "Light rain, wet roadway, 55 F",
+  "narrative": "Officer L. Patel responded to a disabled vehicle call, contacted the driver at the curb, and wrote the report as a chronological third-person narrative. The report included HGN 6/6 clues, Walk and Turn 5/8 clues, and One Leg Stand 2/4 clues.",
+  "miranda": {
+    "time": "0112 hours",
+    "officer": "Officer L. Patel",
+    "suspect_response": "Yes, I understand."
+  },
+  "vehicle": {
+    "year": "2020",
+    "make": "Honda",
+    "model": "Accord",
+    "color": "black",
+    "plate": "8MRK442"
+  },
+  "property": {
+    "tow": "Vehicle released to Metro Towing after inventory."
+  },
+  "charges": ["CVC 23152a", "CVC 23152b"],
+  "supervisor_notes": "Sgt. Rodriguez requested consistent ordering: contact, observations, SFST clue counts, arrest, Miranda, tow, and charges."
+}

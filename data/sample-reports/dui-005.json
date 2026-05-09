@@ -1,0 +1,25 @@
+{
+  "case_number": "MPD-2025-0126",
+  "department": "Metro PD",
+  "incident_type": "DUI Arrest",
+  "supervisor": "Sgt. M. Rodriguez",
+  "weather": "Clear, dry roadway, 64 F",
+  "narrative": "Officer K. Morgan contacted the driver after a property damage collision and prepared a chronological third-person report. The driver showed HGN 6/6 clues, Walk and Turn 4/8 clues, and One Leg Stand 3/4 clues.",
+  "miranda": {
+    "time": "0041 hours",
+    "officer": "Officer K. Morgan",
+    "suspect_response": "Yes, I understand and I want a lawyer."
+  },
+  "vehicle": {
+    "year": "2019",
+    "make": "Ford",
+    "model": "F-150",
+    "color": "white",
+    "plate": "8TRK102"
+  },
+  "property": {
+    "tow": "Metro Towing completed the tow from the collision scene."
+  },
+  "charges": ["CVC 23152a", "CVC 23152b"],
+  "supervisor_notes": "Sgt. Rodriguez emphasized that tow information belongs in the property section and charges must include both CVC 23152a and CVC 23152b."
+}

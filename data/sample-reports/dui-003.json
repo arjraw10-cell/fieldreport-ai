@@ -1,0 +1,25 @@
+{
+  "case_number": "MPD-2024-1304",
+  "department": "Metro PD",
+  "incident_type": "DUI Arrest",
+  "supervisor": "Sgt. M. Rodriguez",
+  "weather": "Foggy, damp roadway, 50 F",
+  "narrative": "Officer T. Nguyen investigated a single-vehicle collision and documented each event chronologically in third person. SFST results were recorded as HGN 6/6 clues, Walk and Turn 4/8 clues, and One Leg Stand 4/4 clues.",
+  "miranda": {
+    "time": "0327 hours",
+    "officer": "Officer T. Nguyen",
+    "suspect_response": "I want an attorney."
+  },
+  "vehicle": {
+    "year": "2017",
+    "make": "Nissan",
+    "model": "Altima",
+    "color": "gray",
+    "plate": "7LQZ908"
+  },
+  "property": {
+    "tow": "Metro Towing removed the vehicle due to collision damage."
+  },
+  "charges": ["CVC 23152a", "CVC 23152b"],
+  "supervisor_notes": "Sgt. Rodriguez noted that quoted Miranda responses must not be paraphrased."
+}

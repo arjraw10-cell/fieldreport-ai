@@ -1,0 +1,25 @@
+{
+  "case_number": "MPD-2025-0049",
+  "department": "Metro PD",
+  "incident_type": "DUI Arrest",
+  "supervisor": "Sgt. M. Rodriguez",
+  "weather": "Cloudy, dry roadway, 58 F",
+  "narrative": "Officer N. Brooks stopped the vehicle for weaving, contacted the driver, and documented the DUI investigation in a chronological third-person format. SFST clue counts were HGN 6/6, Walk and Turn 3/8, and One Leg Stand 3/4.",
+  "miranda": {
+    "time": "2359 hours",
+    "officer": "Officer N. Brooks",
+    "suspect_response": "I understand but I do not want to answer."
+  },
+  "vehicle": {
+    "year": "2022",
+    "make": "Chevrolet",
+    "model": "Malibu",
+    "color": "blue",
+    "plate": "9CDE551"
+  },
+  "property": {
+    "tow": "Vehicle towed by Metro Towing and logged on property sheet."
+  },
+  "charges": ["CVC 23152a", "CVC 23152b"],
+  "supervisor_notes": "Sgt. Rodriguez returned the first draft until it included the full year, make, model, color, and plate."
+}

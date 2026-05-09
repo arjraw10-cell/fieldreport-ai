@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  background: #f4f1ea;
+  color: #111827;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(184, 135, 70, 0.2), transparent 34rem),
+    linear-gradient(135deg, #f4f1ea 0%, #ece4d6 48%, #f8f7f2 100%);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(38, 54, 79, 0.25);
+  background: rgba(255, 255, 255, 0.75);
+  padding: 0.1rem 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #26364f;
+}

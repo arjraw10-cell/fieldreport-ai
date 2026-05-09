@@ -1,0 +1,52 @@
+{
+  "evidence_type": "bodycam",
+  "recording_start": "2025-05-09T01:47:10Z",
+  "source_ref": "bodycam:BC-4821-2025-0519",
+  "transcript": [
+    {
+      "offset_seconds": 15,
+      "speaker": "Officer Chen",
+      "text": "I am Officer J. Chen with Metro PD. I am at 780 Elm Street contacting the driver of a white SUV, plate 8XYZ321."
+    },
+    {
+      "offset_seconds": 38,
+      "speaker": "David Kowalski",
+      "text": "I was coming from Mike's place on 5th. I had a couple drinks."
+    },
+    {
+      "offset_seconds": 190,
+      "speaker": "Officer Chen",
+      "text": "HGN shows six out of six clues."
+    },
+    {
+      "offset_seconds": 312,
+      "speaker": "Officer Chen",
+      "text": "Walk and Turn shows four out of eight clues."
+    },
+    {
+      "offset_seconds": 421,
+      "speaker": "Officer Chen",
+      "text": "One Leg Stand shows three out of four clues."
+    },
+    {
+      "offset_seconds": 410,
+      "speaker": "Officer Chen",
+      "text": "The driver remained at the scene beside the white SUV during the investigation."
+    },
+    {
+      "offset_seconds": 412,
+      "speaker": "Officer Chen",
+      "text": "David Kowalski is placed under arrest for DUI."
+    },
+    {
+      "offset_seconds": 413,
+      "speaker": "Officer Chen",
+      "text": "At 0154 hours, I advised David Kowalski of Miranda."
+    },
+    {
+      "offset_seconds": 420,
+      "speaker": "David Kowalski",
+      "text": "I understand and I want a lawyer."
+    }
+  ]
+}
