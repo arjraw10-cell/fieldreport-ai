@@ -1,0 +1,15 @@
+{
+  "incident_id": "CAD-2025-0519-0087",
+  "call_type": "TRAFFIC - HIT AND RUN / PROPERTY DAMAGE",
+  "received": "2025-05-09T01:42:33Z",
+  "address": "780 ELM ST",
+  "beat": "3A",
+  "division": "Central",
+  "units": [
+    {
+      "unit": "4821",
+      "officer": "Chen, J.",
+      "arrived": "01:47:05"
+    }
+  ]
+}

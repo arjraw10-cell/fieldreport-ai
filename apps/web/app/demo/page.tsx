@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import TimelineView from "@/components/TimelineView";
 import type { AuditRecord, ProcessedCaseState, ReportRecord } from "@/lib/types";
-import { DEMO_CASE_NUMBER } from "@/lib/demo";
+import { DEMO_CASE_NUMBER, DEMO_USERS } from "@/lib/demo";
 
 type StepState = "idle" | "running" | "done" | "error";
 
@@ -54,7 +54,9 @@ export default function DemoPage() {
   const [report, setReport] = useState<ReportRecord | null>(null);
   const [audit, setAudit] = useState<AuditRecord[]>([]);
   const [busy, setBusy] = useState(false);
+  const [user, setUser] = useState("Officer Chen");
   const [message, setMessage] = useState<string | null>(null);
+  const activeUser = DEMO_USERS.find((item) => item.name === user) ?? DEMO_USERS[0];
 
   function mark(id: string, nextState: StepState, detail?: string) {
     setSteps((current) => current.map((step) => (step.id === id ? { ...step, state: nextState, detail: detail ?? step.detail } : step)));
@@ -85,6 +87,24 @@ export default function DemoPage() {
       const auditJson = await auditResponse.json();
       setAudit(auditJson.audit ?? []);
     }
+  }
+
+  async function loadSession() {
+    const response = await fetch("/api/demo-session", { cache: "no-store" });
+    const json = (await response.json()) as { error?: string; user?: { name?: string } };
+    if (!response.ok) throw new Error(json.error ?? "Failed to load demo session.");
+    setUser(json.user?.name ?? DEMO_USERS[0].name);
+  }
+
+  async function changeUser(nextUser: string) {
+    const response = await fetch("/api/demo-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user: nextUser })
+    });
+    const json = (await response.json()) as { error?: string; user?: { name?: string } };
+    if (!response.ok) throw new Error(json.error ?? "Failed to switch demo user.");
+    setUser(json.user?.name ?? DEMO_USERS[0].name);
   }
 
   async function runDemo() {
@@ -133,7 +153,7 @@ export default function DemoPage() {
   }
 
   useEffect(() => {
-    loadExisting().catch(() => undefined);
+    Promise.all([loadExisting(), loadSession()]).catch(() => undefined);
   }, []);
 
   const flags = [...(state?.contradictions ?? []), ...(state?.missingInfo ?? [])];
@@ -150,9 +170,21 @@ export default function DemoPage() {
           <Link className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white/80 hover:bg-white/10" href="/">
             FieldReport AI
           </Link>
-          <Link className="rounded-full bg-white px-4 py-2 text-sm font-bold text-[#09111f]" href={`/review/${DEMO_CASE_NUMBER}`}>
-            Open review
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-3 rounded-full border border-white/15 bg-white/10 px-4 py-2">
+              <span className="text-xs font-bold uppercase tracking-wide text-white/45">User</span>
+              <select className="bg-transparent text-sm font-bold text-white outline-none" value={user} onChange={(event) => void changeUser(event.target.value)}>
+                {DEMO_USERS.map((demoUser) => (
+                  <option key={demoUser.name} className="text-ink">
+                    {demoUser.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Link className="rounded-full bg-white px-4 py-2 text-sm font-bold text-[#09111f]" href={`/review/${DEMO_CASE_NUMBER}`}>
+              Open review
+            </Link>
+          </div>
         </header>
 
         <section className="grid items-end gap-8 lg:grid-cols-[1.15fr_0.85fr]">
@@ -188,7 +220,7 @@ export default function DemoPage() {
               </div>
               <div className="rounded-2xl bg-black/20 p-4">
                 <p className="font-bold text-white">Demo users</p>
-                <p>Officer Chen edits. Sgt. Rodriguez approves.</p>
+                <p>{activeUser.name} is active. {activeUser.canApprove ? "This session can approve final." : "This session can edit but not approve final."}</p>
               </div>
             </div>
           </aside>

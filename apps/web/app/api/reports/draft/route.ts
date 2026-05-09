@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { draftReport } from "@/lib/agent";
-import { addAudit, createReport, getCaseByNumber, getLatestReportForCase, seedCase } from "@/lib/db";
+import { addAudit, createReport, getCaseByIdOrNumber, getCaseByNumber, getLatestReportForCase, seedCase } from "@/lib/db";
 import { getCaseState } from "@/lib/tensorlake";
 import { DEMO_CASE_NUMBER } from "@/lib/demo";
+import { getAuthContext } from "@/lib/auth";
 
 const draftedFields = ["narrative", "charges", "property", "miranda_documentation", "vehicle_description", "policy_compliance"] as const;
 
 export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as { caseId?: string; actor?: string };
+  const auth = await getAuthContext(request);
   const caseNumber = body.caseId ?? DEMO_CASE_NUMBER;
-  const actor = body.actor ?? "FieldReport AI";
-  const caseRecord = (await getCaseByNumber(caseNumber)) ?? (await seedCase(caseNumber));
-  const evidence = await getCaseState(caseNumber);
+  const actor = auth?.user.name ?? body.actor ?? "FieldReport AI";
+  const caseRecord = auth ? await getCaseByIdOrNumber(caseNumber, auth.org.id) : (await getCaseByNumber(caseNumber)) ?? (await seedCase(caseNumber));
+  if (!caseRecord) return NextResponse.json({ error: "Case not found." }, { status: 404 });
+  const evidence = await getCaseState(caseRecord.case_number, auth?.org.id);
 
   if (!evidence.timeline.length) {
     return NextResponse.json({ error: "No processed evidence exists for this case." }, { status: 400 });
@@ -36,8 +39,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const auth = await getAuthContext(request);
   const caseNumber = request.nextUrl.searchParams.get("caseId") ?? DEMO_CASE_NUMBER;
-  const caseRecord = await getCaseByNumber(caseNumber);
+  const caseRecord = auth ? await getCaseByIdOrNumber(caseNumber, auth.org.id) : await getCaseByNumber(caseNumber);
   if (!caseRecord) return NextResponse.json({ report: null, case: null });
   const report = await getLatestReportForCase(caseRecord.id);
   return NextResponse.json({ case: caseRecord, report });
