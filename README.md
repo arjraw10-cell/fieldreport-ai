@@ -24,10 +24,11 @@ TENSORLAKE_API_URL=
 INSFORGE_API_KEY=
 DATABASE_URL=
 OPENAI_API_KEY=
+OPENAI_BASE_URL=https://bh85sj6nqn5ns4-8080.proxy.runpod.net/v1
 APP_URL=http://localhost:3000
 ```
 
-If `DATABASE_URL` is unset, the demo uses an in-process database fallback. If `OPENAI_API_KEY` is unset, deterministic local drafting keeps the end-to-end demo working.
+If `DATABASE_URL` is unset, the demo uses an in-process database fallback. If `OPENAI_API_KEY` is unset, deterministic local drafting keeps the end-to-end demo working. `OPENAI_BASE_URL` defaults to the RunPod-compatible `/v1` endpoint used for this demo and can be changed later.
 
 ## Demo Flow
 
