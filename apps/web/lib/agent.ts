@@ -7,8 +7,6 @@ type DraftingProvider = {
   draft(prompt: string): Promise<DraftReport>;
 };
 
-const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL ?? "https://bh85sj6nqn5ns4-8080.proxy.runpod.net/v1";
-
 function evidenceBlock(evidence: ProcessedCaseState) {
   return JSON.stringify(
     {
@@ -52,7 +50,7 @@ ${evidenceBlock(evidence)}`;
 class OpenAIDraftingProvider implements DraftingProvider {
   private client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
-    baseURL: OPENAI_BASE_URL
+    baseURL: process.env.OPENAI_BASE_URL
   });
 
   async draft(prompt: string) {
