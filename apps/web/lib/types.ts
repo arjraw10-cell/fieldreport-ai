@@ -84,6 +84,14 @@ export type DraftReport = {
   policy_compliance: string[];
   contradictions: Flag[];
   missing_info: Flag[];
+  niaContext?: NiaContextResult[];
+  niaContextUsed?: number;
+};
+
+export type NiaContextResult = {
+  query: string;
+  results: SearchResult[];
+  tags?: string[];
 };
 
 export type SearchResult = {

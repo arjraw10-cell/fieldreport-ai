@@ -6,10 +6,10 @@ import AuditTrailView from "@/components/AuditTrailView";
 import FlagsPanel from "@/components/FlagsPanel";
 import ReportView from "@/components/ReportView";
 import TimelineView from "@/components/TimelineView";
-import type { AuditRecord, CaseRecord, DraftReport, ProcessedCaseState, ReportRecord } from "@/lib/types";
+import type { AuditRecord, CaseRecord, DraftReport, NiaContextResult, ProcessedCaseState, ReportRecord } from "@/lib/types";
 import { DEMO_USERS } from "@/lib/demo";
 
-type Tab = "report" | "timeline" | "audit";
+type Tab = "report" | "brain" | "timeline" | "audit";
 type LoadStatus = "loading" | "ready" | "error";
 type BusyAction = "session" | "draft" | "save" | "approve" | null;
 type Notice = { tone: "info" | "error" | "success"; text: string };
@@ -36,6 +36,7 @@ export default function ReviewPage({ params }: { params: Promise<{ caseId: strin
   const [notice, setNotice] = useState<Notice | null>(null);
   const [loadStatus, setLoadStatus] = useState<LoadStatus>("loading");
   const [busyAction, setBusyAction] = useState<BusyAction>(null);
+  const [niaContext, setNiaContext] = useState<NiaContextResult[] | null>(null);
 
   const activeUser = DEMO_USERS.find((item) => item.name === user) ?? DEMO_USERS[0];
   const isBusy = busyAction !== null;
@@ -66,6 +67,12 @@ export default function ReviewPage({ params }: { params: Promise<{ caseId: strin
     setReport(nextReport);
     setDraft(nextReport?.final ?? nextReport?.human_edit ?? nextReport?.ai_draft ?? null);
     setEditing(false);
+
+    // Load Nia context from the draft if available
+    const draftWithNia = nextReport?.ai_draft as DraftReport & { niaContext?: NiaContextResult[] } | null;
+    if (draftWithNia?.niaContext) {
+      setNiaContext(draftWithNia.niaContext);
+    }
 
     if (nextReport?.id) {
       const auditResponse = await fetch(`/api/audit?reportId=${encodeURIComponent(nextReport.id)}`, { cache: "no-store" });
@@ -210,13 +217,13 @@ export default function ReviewPage({ params }: { params: Promise<{ caseId: strin
       </header>
 
       <nav className="mb-6 flex flex-wrap gap-2">
-        {(["report", "timeline", "audit"] as const).map((item) => (
+        {(["report", "brain", "timeline", "audit"] as const).map((item) => (
           <button
             key={item}
             className={`rounded-full px-4 py-2 text-sm font-bold capitalize ${tab === item ? "bg-ink text-white" : "bg-white/70 text-ink"}`}
             onClick={() => setTab(item)}
           >
-            {item === "audit" ? "Audit Trail" : item}
+            {item === "audit" ? "Audit Trail" : item === "brain" ? "🧠 Brain Context" : item}
           </button>
         ))}
       </nav>
@@ -286,6 +293,44 @@ export default function ReviewPage({ params }: { params: Promise<{ caseId: strin
               )}
             </div>
           )}
+          {tab === "brain" && (
+            <div className="rounded-[2rem] border border-ink/10 bg-white/80 p-6 shadow-card">
+              <h2 className="mb-4 font-display text-2xl text-ink">🔍 Nia Semantic Search Results</h2>
+              <p className="mb-4 text-sm text-ink/65">These are the department brain queries that shaped the report draft. Each result comes from data ingested by Hyperspell and indexed by Nia.</p>
+              {niaContext && niaContext.length > 0 ? (
+                <div className="space-y-4">
+                  {niaContext.map((ctx, i) => (
+                    <div key={i} className="rounded-xl border border-ink/10 bg-paper/50 p-4">
+                      <p className="text-sm font-bold text-slateblue">Query {i + 1}: &ldquo;{ctx.query}&rdquo;</p>
+                      <div className="mt-2 space-y-2">
+                        {ctx.results.slice(0, 2).map((r, j) => (
+                          <div key={j} className="rounded-lg bg-white p-3 shadow-sm">
+                            <p className="text-sm text-ink/80">&ldquo;{r.content.length > 250 ? r.content.slice(0, 250) + "..." : r.content}&rdquo;</p>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              <span className="source-badge">{r.source}</span>
+                              {r.tags.map((tag) => (<span key={tag} className="rounded-full bg-slateblue/10 px-2 py-0.5 text-xs text-slateblue">{tag}</span>))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-ink/50">No Nia context stored for this draft. Generate a new draft to see the brain queries.</p>
+                  <div className="rounded-xl border border-slateblue/20 bg-slateblue/5 p-4">
+                    <p className="text-sm font-bold text-slateblue">Example Nia queries that shape a DUI draft:</p>
+                    <ul className="mt-2 space-y-1 text-sm text-ink/70">
+                      <li>• &ldquo;Sgt. Rodriguez DUI report requirements SFST vehicle description&rdquo; → Slack feedback about SFST clue counts</li>
+                      <li>• &ldquo;Miranda policy requirements exact time officer response&rdquo; → Legal Division email about Miranda documentation</li>
+                      <li>• &ldquo;past Metro PD DUI report patterns&rdquo; → Past DUI reports for style reference</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           {tab === "timeline" && (
             <div className="rounded-[2rem] border border-ink/10 bg-white/80 p-6 shadow-card">
               <TimelineView timeline={state?.timeline ?? []} />
@@ -343,6 +388,17 @@ export default function ReviewPage({ params }: { params: Promise<{ caseId: strin
           </div>
         </div>
       </section>}
+
+      <footer className="mt-12 border-t border-ink/10 pt-6 pb-8">
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-ink/30 mb-3">Powered by</p>
+        <div className="flex flex-wrap gap-3 text-xs">
+          <span className="rounded-full border border-ink/15 px-3 py-1 text-ink/50">🧠 Hyperspell — Data ingestion</span>
+          <span className="rounded-full border border-ink/15 px-3 py-1 text-ink/50">🔍 Nia — Knowledge search & cross-session context</span>
+          <span className="rounded-full border border-ink/15 px-3 py-1 text-ink/50">⚡ Tensorlake — Evidence processing</span>
+          <span className="rounded-full border border-ink/15 px-3 py-1 text-ink/50">🗄️ InsForge — Postgres backend</span>
+          <span className="rounded-full border border-ink/15 px-3 py-1 text-ink/50">▲ Vercel — Deployment</span>
+        </div>
+      </footer>
     </main>
   );
 }

@@ -1,4 +1,5 @@
 import { getCaseByNumber, seedCase, updateCaseEvidence } from "./db";
+import { saveFindings } from "./nia";
 import type { EvidenceType, Flag, ProcessedCaseState, TimelineEntry } from "./types";
 import { sourceMarker } from "./utils";
 
@@ -291,6 +292,15 @@ export async function processEvidence(caseId: string, evidenceType: EvidenceType
     .filter((entry, index, entries) => entries.findIndex((candidate) => candidate.sourceRef === entry.sourceRef && candidate.title === entry.title) === index)
     .sort((a, b) => a.time.localeCompare(b.time));
   recomputeFlags(state);
+
+  // ── Save processing findings to Nia cross-session context ──
+  await saveFindings(caseId, [
+    { key: `evidence_processed_${evidenceType}`, value: "true" },
+    { key: "timeline_events", value: String(state.timeline.length) },
+    { key: "processed_order", value: state.processedOrder.join(" → ") },
+    { key: "contradictions_found", value: String(state.contradictions.length) },
+    { key: "missing_info_found", value: String(state.missingInfo.length) }
+  ]);
 
   // Attempt real Tensorlake structured extraction when credentials are available
   if (process.env.TENSORLAKE_API_KEY && process.env.TENSORLAKE_API_URL) {

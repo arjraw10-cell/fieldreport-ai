@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { draftReport } from "@/lib/agent";
+import { draftReport, draftReportWithoutBrain } from "@/lib/agent";
 import { addAudit, createReport, getCaseByIdOrNumber, getCaseByNumber, getLatestReportForCase, seedCase } from "@/lib/db";
 import { getCaseState } from "@/lib/tensorlake";
 import { DEMO_CASE_NUMBER } from "@/lib/demo";
 import { getAuthContext } from "@/lib/auth";
+import type { NiaContextResult } from "@/lib/types";
 
 const draftedFields = ["narrative", "charges", "property", "miranda_documentation", "vehicle_description", "policy_compliance"] as const;
 
 export async function POST(request: NextRequest) {
-  const body = (await request.json().catch(() => ({}))) as { caseId?: string; actor?: string };
+  const body = (await request.json().catch(() => ({}))) as { caseId?: string; actor?: string; includeComparison?: boolean };
   const auth = await getAuthContext(request);
   const caseNumber = body.caseId ?? DEMO_CASE_NUMBER;
   const actor = auth?.user.name ?? body.actor ?? "FieldReport AI";
@@ -21,6 +22,8 @@ export async function POST(request: NextRequest) {
   }
 
   const draft = await draftReport(evidence);
+  const niaContext = (draft as any).niaContext as NiaContextResult[] | undefined;
+  const niaContextUsed = (draft as any).niaContextUsed as number | undefined;
   const report = await createReport(caseRecord.id, draft);
 
   for (const field of draftedFields) {
@@ -31,11 +34,16 @@ export async function POST(request: NextRequest) {
       field,
       before: null,
       after: JSON.stringify(draft[field]),
-      evidence_ref: "processed-case-state"
+      evidence_ref: "processed-case-state + nia-context"
     });
   }
 
-  return NextResponse.json({ report, draft });
+  let withoutBrain: any = null;
+  if (body.includeComparison) {
+    withoutBrain = await draftReportWithoutBrain(evidence);
+  }
+
+  return NextResponse.json({ report, draft, niaContext, niaContextUsed, withoutBrain });
 }
 
 export async function GET(request: NextRequest) {
