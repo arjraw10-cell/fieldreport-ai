@@ -13,6 +13,8 @@ type DraftingProvider = {
   draft(prompt: string): Promise<DraftReport>;
 };
 
+const DRAFT_PROVIDER_TIMEOUT_MS = Number(process.env.DRAFT_PROVIDER_TIMEOUT_MS ?? 12000);
+
 function evidenceBlock(evidence: ProcessedCaseState) {
   return JSON.stringify(
     { timeline: evidence.timeline, facts: evidence.facts, citations: evidence.citations, contradictions: evidence.contradictions, missingInfo: evidence.missingInfo },
@@ -95,7 +97,11 @@ function buildVehicleDescription(vehicle: ProcessedCaseState["facts"]["vehicle"]
 }
 
 class OpenAIDraftingProvider implements DraftingProvider {
-  private client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? "not-required", baseURL: process.env.OPENAI_BASE_URL });
+  private client = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY ?? "not-required",
+    baseURL: process.env.OPENAI_BASE_URL,
+    timeout: DRAFT_PROVIDER_TIMEOUT_MS
+  });
   async draft(prompt: string) {
     const completion = await this.client.chat.completions.create({
       model: process.env.OPENAI_MODEL ?? "gpt-4o",
@@ -106,6 +112,21 @@ class OpenAIDraftingProvider implements DraftingProvider {
     const content = completion.choices[0]?.message?.content;
     if (!content) throw new Error("OpenAI returned an empty draft");
     return JSON.parse(content) as DraftReport;
+  }
+}
+
+async function withTimeout<T>(work: Promise<T>, timeoutMs: number, label: string) {
+  let timeoutId: NodeJS.Timeout | null = null;
+
+  try {
+    return await Promise.race([
+      work,
+      new Promise<T>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error(`${label} timed out after ${timeoutMs}ms`)), timeoutMs);
+      })
+    ]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
 }
 
@@ -209,7 +230,7 @@ export async function draftReport(evidence: ProcessedCaseState) {
   const provider: DraftingProvider = process.env.OPENAI_API_KEY || process.env.OPENAI_BASE_URL ? new OpenAIDraftingProvider() : new LocalDraftingProvider(evidence);
 
   try {
-    const draft = await provider.draft(prompt);
+    const draft = await withTimeout(provider.draft(prompt), DRAFT_PROVIDER_TIMEOUT_MS, "Draft provider");
 
     await saveFindings(evidence.caseId, [
       { key: "draft_generated", value: "true" },
@@ -218,7 +239,6 @@ export async function draftReport(evidence: ProcessedCaseState) {
       { key: "citations_count", value: String(draft.citations?.length ?? 0) },
       { key: "cross_session_provider", value: crossSession.provider }
     ]);
-
     return {
       ...draft,
       contradictions: evidence.contradictions,

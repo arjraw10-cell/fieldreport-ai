@@ -37,6 +37,11 @@ export async function getAuthContext(request: NextRequest) {
   return getAuthContextBySession(hashToken(token));
 }
 
+export async function getAuthContextFromToken(token?: string | null) {
+  if (!token) return null;
+  return getAuthContextBySession(hashToken(token));
+}
+
 export async function requireAuth(request: NextRequest) {
   const auth = await getAuthContext(request);
   if (!auth) {
