@@ -1,41 +1,14 @@
-import { existsSync, readFileSync, readdirSync } from "fs";
-import path from "path";
+import { PAST_REPORTS } from "./sample-data";
 
 export function nowIso() {
   return new Date().toISOString();
 }
 
-export function projectRoot() {
-  const candidates = [
-    process.cwd(),
-    path.resolve(process.cwd(), "../.."),
-    path.resolve(process.cwd(), "../../..")
-  ];
-  const root = candidates.find((candidate) => existsSync(path.join(candidate, "data")));
-  return root ?? process.cwd();
-}
-
-export function dataPath(...parts: string[]) {
-  return path.join(projectRoot(), "data", ...parts);
-}
-
-export function readJsonFile<T>(...parts: string[]): T {
-  return JSON.parse(readFileSync(dataPath(...parts), "utf8")) as T;
-}
-
-export function readTextFile(...parts: string[]) {
-  return readFileSync(dataPath(...parts), "utf8");
-}
-
-export function readSampleReportFiles() {
-  const dir = dataPath("sample-reports");
-  return readdirSync(dir)
-    .filter((file) => file.endsWith(".json"))
-    .sort()
-    .map((file) => ({
-      file,
-      content: readFileSync(path.join(dir, file), "utf8")
-    }));
+export function getSampleReportFiles() {
+  return PAST_REPORTS.map((report, index) => ({
+    file: `dui-${String(index + 1).padStart(3, "0")}.json`,
+    content: JSON.stringify(report)
+  }));
 }
 
 export function stableId(prefix: string) {

@@ -3,7 +3,7 @@ import { stableId } from "./utils";
 
 type IngestedDoc = SearchResult;
 
-const HYPERSPELL_BASE = process.env.HYPERSPELL_API_KEY ? "https://hyperspell.ai/api/v1" : "";
+const HYPERSPELL_BASE = "https://api.hyperspell.com/v1";
 const HS_KEY = process.env.HYPERSPELL_API_KEY ?? "";
 
 const globalForHs = globalThis as unknown as { hyperspellDocs?: IngestedDoc[] };
@@ -47,13 +47,13 @@ export async function hsIngest(title: string, content: string, source: string, m
 
   if (useApi) {
     try {
-      await callHyperspell("/memories", { title, content, source, ...metadata });
-      return { provider: "hyperspell", status: "ingested", doc };
+      await callHyperspell("/documents", { title, content, source, ...metadata });
     } catch (err) {
       console.warn("[hyperspell] Ingest API failed, falling back to local:", err);
     }
   }
 
+  // Always index locally so the demo works
   if (existing) {
     Object.assign(existing, doc);
   } else {
@@ -61,7 +61,7 @@ export async function hsIngest(title: string, content: string, source: string, m
   }
 
   return {
-    provider: "local",
+    provider: useApi ? "hyperspell+local" : "local",
     status: "ingested",
     doc
   };

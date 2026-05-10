@@ -3,16 +3,11 @@ import { getCaseByIdOrNumber, getCaseByNumber, seedCase, createEvidenceItem, upd
 import { processEvidence } from "@/lib/tensorlake";
 import type { EvidenceType } from "@/lib/types";
 import { DEMO_CASE_NUMBER } from "@/lib/demo";
-import { readJsonFile } from "@/lib/utils";
+import { EVIDENCE } from "@/lib/sample-data";
 import { getAuthContext } from "@/lib/auth";
 
 function loadSampleEvidence(evidenceType: EvidenceType) {
-  const fileByType: Record<EvidenceType, string> = {
-    bodycam: "bodycam.json",
-    dispatch: "dispatch.json",
-    "officer-notes": "officer-notes.json"
-  };
-  return readJsonFile("sample-evidence", fileByType[evidenceType]);
+  return EVIDENCE[evidenceType];
 }
 
 export async function POST(request: NextRequest) {
